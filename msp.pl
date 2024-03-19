@@ -356,33 +356,32 @@ sub rbl_check {
     # maybe we should append so that user can specify all and ones which are not included in the list?
     @rbls = @RBLS if ( grep { /\ball\b/i } @rbls );
     print_bold_white("Checking IP's against RBL's...\n");
-print "------------------------------\n";
+    print "------------------------------\n";
 
-foreach my $ip (@$ips) {
-    print "$ip:\n";
-    my $ip_rev = join( '.', reverse split( '\.', $ip ) );
-    foreach my $rbl (@rbls) {
-        printf( "\t%-25s ", $rbl );
+    foreach my $ip (@$ips) {
+        print "$ip:\n";
+        my $ip_rev = join( '.', reverse split( '\.', $ip ) );
+        foreach my $rbl (@rbls) {
+            printf( "\t%-25s ", $rbl );
 
-        my $result;
-        if ($libunbound) {
-            $result = dns_query( "$ip_rev.$rbl", 'A' )->[0] || 0;
-        }
-        else {
-            # This uses libunbound, which will return an aref, but we can always expect just one result here
-            $result = dns_query_pre_84( "$ip_rev.$rbl", 'A' ) || 0;
-        }
+            my $result;
+            if ($libunbound) {
+                $result = dns_query( "$ip_rev.$rbl", 'A' )->[0] || 0;
+            }
+            else {
+                # This uses libunbound, which will return an aref, but we can always expect just one result here
+                $result = dns_query_pre_84( "$ip_rev.$rbl", 'A' ) || 0;
+            }
 
-        if ( $result =~ /\A 127\.0\.0\./xms ) {
-            print_bold_red("LISTED\n");
+            if ( $result =~ /\A 127\.0\.0\./xms ) {
+                print_bold_red("LISTED\n");
+            }
+            else {
+                print_bold_green("GOOD\n");
+            }
         }
-        # Commented out the "GOOD" printing to omit it
-        # else {
-        #     print_bold_green("GOOD\n");
-        # }
+        print "\n";
     }
-    print "\n";
-}
 
     return;
 }
@@ -1403,4 +1402,3 @@ sub mx_consistency {
         }
     }
 }
-
